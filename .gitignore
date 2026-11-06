@@ -1,0 +1,52 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+
+# Distribution / packaging
+.Python
+build/
+dist/
+*.egg-info/
+
+# Virtual environments
+.venv/
+venv/
+ENV/
+env/
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+*/.ipynb_checkpoints/*
+
+# IDEs and Editors
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Operating System Files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Large dataset files (Bondora raw data is ~150MB, do not commit to GitHub)
+*.zip
+LoanData_Bondora.csv
+**/LoanData_Bondora.csv
+data/*.csv
+data/*.zip
+!data/PUT_RAW_DATA_HERE.txt
+
+# Trained model binaries (optional large files)
+model/*.joblib
+model/*.cbm
+model/*.pkl
+
+# Microsoft Office temporary lock files
+~$*.docx
+~$*.xlsx
+~$*.pptx

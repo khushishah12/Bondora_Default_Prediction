@@ -1,0 +1,1 @@
+Put LoanData_Bondora.csv (or LoanData_Bondora.csv.zip) in this folder. The raw file is not bundled; see README.md.

@@ -153,21 +153,22 @@ flowchart TD
 
 ## ⚙️ Feature Engineering & Preprocessing
 
-Starting from 47 vetted issuance-time raw predictors, we engineered **7 transparent financial and temporal ratios**:
+Starting from 47 vetted issuance-time raw predictors, we engineered **7 transparent domain ratios and temporal features** (all strictly computable at application time):
 
-$$\text{dti} = \frac{\text{MonthlyPayment}}{\text{IncomeTotal} / 12}$$
+| Feature Name | Type | Mathematical Definition | Economic / Financial Interpretation |
+|---|:---:|:---:|---|
+| `dti` | Continuous | $$\frac{\text{MonthlyPayment}}{\text{IncomeTotal} / 12}$$ | **Debt-to-Income Proxy:** Measures recurring monthly debt service obligations relative to monthly gross earnings. |
+| `amt_ratio` | Continuous | $$\frac{\text{Amount}}{\text{AppliedAmount}}$$ | **Funded vs. Requested Ratio:** Ratio of capital actually funded versus original sum requested by the borrower. |
+| `loan_inc` | Continuous | $$\frac{\text{Amount}}{\text{IncomeTotal}}$$ | **Loan-to-Income Burden:** Total principal leverage scaled against annual income. |
+| `inc_month` | Continuous | $$\frac{\text{IncomeTotal}}{12}$$ | **Monthly Cash Inflow:** Normalizes annual income into a monthly equivalent cashflow base. |
+| `freecash_neg` | Binary | $$\begin{cases} 1 & \text{if } \text{FreeCash} < 0 \\ 0 & \text{otherwise} \end{cases}$$ | **Deficit Cashflow Flag:** Identifies applicants whose declared living expenses exceed net income. |
+| `loan_month` | Discrete | $$\text{Month}(\text{LoanDate})$$ | **Seasonal Origination Month:** Captures seasonal borrowing and repayment dynamics (1–12). |
+| `loan_quarter` | Discrete | $$\text{Quarter}(\text{LoanDate})$$ | **Macroeconomic Quarter:** Tracks cyclical shifts across financial quarters (Q1–Q4). |
 
-$$\text{amt\_ratio} = \frac{\text{Amount}}{\text{AppliedAmount}} \quad (\text{Requested vs Funded Ratio})$$
+> [!NOTE]
+> All divisions guard against division-by-zero by replacing infinite values ($\pm\infty$) with `NaN`, which is subsequently imputed during median preprocessing. No post-origination information is leaked.
 
-$$\text{loan\_inc} = \frac{\text{Amount}}{\text{IncomeTotal}} \quad (\text{Loan-to-Income Burden})$$
-
-$$\text{inc\_month} = \frac{\text{IncomeTotal}}{12} \quad (\text{Monthly Cash Inflow})$$
-
-$$\text{freecash\_neg} = \mathbb{I}(\text{FreeCash} < 0) \quad (\text{Deficit Cashflow Indicator})$$
-
-$$\text{loan\_month}, \, \text{loan\_quarter} \quad (\text{Origination Seasonality})$$
-
-*Total modeling feature space: 54 predictors (51 numeric + 3 categorical: `Country`, `EmploymentDurationCurrentEmployer`, `WorkExperience`).*
+*Total modeling feature space: **54 predictors** (51 numeric continuous/discrete + 3 categorical: `Country`, `EmploymentDurationCurrentEmployer`, `WorkExperience`).*
 
 ---
 
@@ -297,18 +298,31 @@ pip install -r requirements.txt
 
 ### 2. Dataset Acquisition
 
-The dataset is sourced from the public [Bondora Peer-to-Peer Lending Loan Data on Kaggle](https://www.kaggle.com/datasets/saurabhbadole/bondora-peer-to-peer-lending-loan-data).
+The dataset comprises historical peer-to-peer loan performance records published by **Bondora AS** (Estonia).
 
-1. Download **`LoanData_Bondora.csv`** (approx. 149 MB).
-2. Place it in:
-   ```
-   Bondora_Final_Presentation/data/LoanData_Bondora.csv
-   ```
-   *Alternatively, export the environment variable:*
-   ```bash
-   export BONDORA_DATA="/path/to/LoanData_Bondora.csv"
-   # On Windows PowerShell: $env:BONDORA_DATA="C:\path\to\LoanData_Bondora.csv"
-   ```
+You can obtain **`LoanData_Bondora.csv`** (~149 MB) through any of the following active sources:
+
+* **Primary Active Kaggle Mirror:** [Bondora Peer to Peer Lending Loan Data (Manu Siddhartha)](https://www.kaggle.com/datasets/manusiddhartha/bondora-peer-to-peer-lending-loan-data)
+* **Alternative Kaggle Mirror:** [Bondora P2P Lending Dataset (sid321axn)](https://www.kaggle.com/datasets/sid321axn/bondora-peer-to-peer-lending-loan-data)
+* **Kaggle CLI:**
+  ```bash
+  kaggle datasets download -d manusiddhartha/bondora-peer-to-peer-lending-loan-data --unzip
+  ```
+* **Official Platform Transparency Portal:** [Bondora Public Reports & Open Data](https://www.bondora.com/en/public-reports)
+
+#### Placing the Data:
+Once downloaded, place the uncompressed file **`LoanData_Bondora.csv`** (or the `.zip` archive) into:
+```
+Bondora_Final_Presentation/data/LoanData_Bondora.csv
+```
+*Alternatively, set the `BONDORA_DATA` environment variable to point to its location:*
+```bash
+# Linux / macOS
+export BONDORA_DATA="/path/to/LoanData_Bondora.csv"
+
+# Windows PowerShell
+$env:BONDORA_DATA="C:\path\to\LoanData_Bondora.csv"
+```
 
 ### 3. Running the Notebook
 
